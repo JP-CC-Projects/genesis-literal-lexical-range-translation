@@ -1,0 +1,271 @@
+:root {
+  color-scheme: dark;
+  --ink: #f3efe6;
+  --muted: #a89f93;
+  --paper: #1a1814;
+  --panel: #24211c;
+  --line: #3a342c;
+  --one: #f2d078;
+  --all: #9bb8a8;
+  --supplied: #e0a07a;
+  --on-mark: #1c1915;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  font-size: 1.125rem;
+  line-height: 1.35;
+}
+
+header, footer {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+header { text-align: center; }
+
+footer {
+  border-bottom: 0;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+footer p { margin: 0.2rem 0; }
+
+h1 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.6rem;
+  letter-spacing: 0.01em;
+}
+
+header p { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.95rem; }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  margin-top: 0.8rem;
+}
+
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.95rem;
+}
+
+.legend { margin-top: 0.6rem; }
+
+#layout { display: block; }
+
+main {
+  display: grid;
+  grid-template-columns: minmax(33rem, 1fr) minmax(0, 58rem) minmax(33rem, 1fr);
+  justify-content: center;
+  column-gap: 1.25rem;
+  row-gap: 0.12rem;
+  align-items: start;
+  padding: 0.4rem 0 2rem;
+}
+
+.verse { display: contents; }
+
+.en-line, .he-line { margin: 0; }
+
+.pe-line {
+  min-height: 1.35em;
+  cursor: pointer;
+}
+
+.en-line {
+  --vn-space: 2.25rem;
+  --wrap-indent: 1.5rem;
+  grid-column: 2;
+  font-size: 1.25rem;
+  text-align: left;
+  padding-left: calc(var(--vn-space) + var(--wrap-indent));
+  text-indent: calc(-1 * (var(--vn-space) + var(--wrap-indent)));
+}
+
+.he-line {
+  grid-column: 1;
+  direction: rtl;
+  text-align: start;
+  font-family: "SBL Hebrew", "Ezra SIL", "Times New Roman", serif;
+  font-size: 1.2rem;
+  line-height: 1.35;
+}
+
+.vn {
+  display: inline-block;
+  width: 1.8rem;
+  margin-right: 0.45rem;
+  text-align: right;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+}
+
+body:not(.show-vn) .vn { visibility: hidden; }
+body:not(.show-he) .he-line {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.en, .hm {
+  cursor: pointer;
+}
+
+a { color: #e4c98a; }
+
+.en.hl-one, .hm.hl-one { background: var(--one); color: var(--on-mark); }
+.en.hl-all, .hm.hl-all { background: var(--all); color: var(--on-mark); }
+
+body.mark-supplied .en.supplied {
+  text-decoration: underline dotted var(--supplied);
+  text-underline-offset: 0.18em;
+}
+
+#side {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  width: 33rem;
+  height: 100vh;
+  overflow: auto;
+  padding: 1rem 1.1rem 2rem;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+}
+
+#side[hidden] { display: none; }
+
+#close {
+  float: right;
+  font: inherit;
+  color: inherit;
+  font-size: 0.85rem;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 0.2rem;
+  padding: 0.15rem 0.5rem;
+  cursor: pointer;
+}
+
+.side-en {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.side-he {
+  direction: ltr;
+  text-align: left;
+  font-family: "SBL Hebrew", "Ezra SIL", "Times New Roman", serif;
+  font-size: 1.8rem;
+  margin: 0.15rem 0 0;
+}
+
+.side-tr {
+  min-height: 1.35em;
+  margin: 0.1rem 0 0.8rem;
+  font-style: italic;
+}
+
+.side-he:last-of-type { margin-bottom: 0.8rem; }
+
+.side-section h2 {
+  margin: 0.85rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.side-section h3 {
+  margin: 0.55rem 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.side-section p {
+  margin: 0.55rem 0 0;
+  text-indent: 1.5em;
+}
+
+.side-section blockquote {
+  margin: 0.55rem 0 0 0.2rem;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--line);
+}
+
+.side-cite {
+  font-size: 0.75em;
+  vertical-align: super;
+}
+
+strong { font-weight: 600; }
+em { font-style: italic; }
+
+.side-reject em { font-style: italic; }
+
+.side-section ol,
+.side-section ul {
+  margin: 0.3rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.side-section ol { list-style: decimal; }
+.side-section ul { list-style: disc; }
+
+.side-section li {
+  margin: 0;
+  line-height: 1.35;
+}
+
+dl { margin: 0.8rem 0; }
+dt {
+  margin-top: 0.7rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+dd { margin: 0.15rem 0 0; }
+
+ul { margin: 0.2rem 0 0; padding-left: 1.1rem; }
+
+.hint { color: var(--muted); }
+
+@media (max-width: 860px) {
+  main {
+    grid-template-columns: minmax(8rem, 1fr) minmax(0, 1.5fr) minmax(8rem, 1fr);
+    column-gap: 0.6rem;
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+  #side {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: auto;
+    height: auto;
+    max-height: 55vh;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
+  }
+}

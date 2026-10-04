@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Genesis 1</title>
+  <link rel="stylesheet" href="reset.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Genesis 1</h1>
+    <div class="controls">
+      <label><input type="checkbox" id="opt-verses" checked> Verse numbers</label>
+      <label><input type="checkbox" id="opt-hebrew" checked> Hebrew</label>
+      <label><input type="checkbox" id="opt-supplied"> Mark supplied words</label>
+    </div>
+    <p class="legend">Hover highlights that one Hebrew word. Hold Shift to highlight every use of the same word on the page.</p>
+  </header>
+  <div id="layout">
+    <main id="text"></main>
+    <aside id="side" hidden>
+      <button type="button" id="close">Close</button>
+      <div id="side-body"></div>
+    </aside>
+  </div>
+  <footer>
+    <p>Hebrew text: Westminster Leningrad Codex, public domain.</p>
+    <p>Lemma and morphology tags: <a href="https://github.com/openscriptures/morphhb">Open Scriptures Hebrew Bible</a>, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</p>
+    <p>Lexical evidence: UBS Dictionary of Biblical Hebrew, adapted from the Semantic Dictionary of Biblical Hebrew (© United Bible Societies 2000–2023), <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
+  </footer>
+  <script src="data/gen01.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

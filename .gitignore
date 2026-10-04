@@ -1,0 +1,15 @@
+# Only the published site is tracked. Everything else stays local.
+/*
+!/.gitignore
+!/docs/
+
+/docs/*
+!/docs/.nojekyll
+!/docs/index.html
+!/docs/reset.css
+!/docs/style.css
+!/docs/app.js
+!/docs/data/
+
+/docs/data/*
+!/docs/data/gen01.js
