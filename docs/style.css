@@ -66,6 +66,17 @@ header p { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.95rem; }
 
 .legend { margin-top: 0.6rem; }
 
+.chapters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem 0.7rem;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.chapters [aria-current] { font-weight: 600; }
+
 #layout { display: block; }
 
 main {
@@ -225,8 +236,6 @@ body.mark-supplied .en.supplied {
 strong { font-weight: 600; }
 em { font-style: italic; }
 
-.side-reject em { font-style: italic; }
-
 .side-section ol,
 .side-section ul {
   margin: 0.3rem 0 0;
@@ -241,32 +250,26 @@ em { font-style: italic; }
   line-height: 1.35;
 }
 
-dl { margin: 0.8rem 0; }
-dt {
-  margin-top: 0.7rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-dd { margin: 0.15rem 0 0; }
-
 ul { margin: 0.2rem 0 0; padding-left: 1.1rem; }
 
-.hint { color: var(--muted); }
-
-@media (max-width: 60rem) {
+/* Below this width the sidebar would overlap a centered English column. */
+@media (max-width: 101.5rem) {
   main {
-    grid-template-columns: minmax(0, 1fr) minmax(0, var(--en-max)) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(var(--en-min), var(--en-max)) minmax(0, 1fr);
+    justify-content: start;
     column-gap: 0;
     padding-left: 1rem;
-    padding-right: 1rem;
+    padding-right: calc(var(--gutter) + var(--gap));
   }
   .he-line,
   .controls label:has(#opt-hebrew) { display: none; }
 }
 
 @media (max-width: 860px) {
+  main {
+    grid-template-columns: minmax(0, 1fr) minmax(0, var(--en-max)) minmax(0, 1fr);
+    padding-right: 1rem;
+  }
   #side {
     position: fixed;
     left: 0;

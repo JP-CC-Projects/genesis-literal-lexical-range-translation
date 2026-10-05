@@ -2,8 +2,6 @@ const byH = new Map();
 const byLex = new Map();
 const partById = new Map();
 let lexicon = {};
-let sources = {};
-let notes = {};
 let highlighted = [];
 let current = null;
 let shiftDown = false;
@@ -15,18 +13,10 @@ function el(tag, cls, text) {
   return node;
 }
 
-function link(href, text) {
-  const node = el("a", null, text);
-  node.href = href;
-  node.target = "_blank";
-  node.rel = "noopener noreferrer";
-  return node;
-}
-
 function index(node) {
-  const h = node.dataset.h;
+  const ids = [node.dataset.h, ...(node.dataset.also || "").split(",")].filter(Boolean);
   const lex = node.dataset.lex;
-  if (h) {
+  for (const h of ids) {
     if (!byH.has(h)) byH.set(h, []);
     byH.get(h).push(node);
   }
@@ -35,9 +25,6 @@ function index(node) {
     byLex.get(lex).push(node);
   }
 }
-
-const PE_WHY =
-  "This is an intentionally blank line, sometimes marked by פ (a petuchah) by scribes. In the Leningrad Codex, the scribe did not mark it but instead left the rest of the line blank and began again on the next line.  The letter פ is not written in the manuscript. It is the sign used here for that blank.";
 
 function render(data) {
   const main = document.getElementById("text");
@@ -55,6 +42,7 @@ function render(data) {
       if (i) en.appendChild(document.createTextNode(" "));
       const node = el("span", "en", word.t);
       if (word.h) node.dataset.h = word.h;
+      if (word.also) node.dataset.also = word.also.join(",");
       if (word.lex) node.dataset.lex = word.lex;
       if (word.morph) node.dataset.morph = word.morph;
       if (word.supplied) node.classList.add("supplied");
@@ -122,8 +110,22 @@ function paint() {
   clearHighlight();
   if (!current) return;
   const useLex = shiftDown && current.dataset.lex;
-  const list = useLex ? byLex.get(current.dataset.lex) : byH.get(current.dataset.h);
-  if (!list) return;
+  let list;
+  if (useLex) {
+    list = byLex.get(current.dataset.lex);
+  } else {
+    const ids = [current.dataset.h, ...(current.dataset.also || "").split(",")].filter(Boolean);
+    const seen = new Set();
+    list = [];
+    for (const id of ids) {
+      for (const node of byH.get(id) || []) {
+        if (seen.has(node)) continue;
+        seen.add(node);
+        list.push(node);
+      }
+    }
+  }
+  if (!list.length) return;
   const cls = useLex ? "hl-all" : "hl-one";
   for (const node of list) {
     node.classList.add(cls);
@@ -148,9 +150,6 @@ function hebrewWord(node) {
 }
 
 function lexiconEntry(node) {
-  if (node.dataset.lex === "m:pe") {
-    return { discussion: [{ title: "Open paragraph", text: PE_WHY }] };
-  }
   const key = node.dataset.lex;
   if (key && lexicon[key]) return lexicon[key];
   const part = node.dataset.h ? partById.get(node.dataset.h) : null;
@@ -165,127 +164,19 @@ function section(parent, label) {
   return block;
 }
 
-function Citations() {
-  this.items = [];
-  this.index = new Map();
-}
-
-Citations.prototype.mark = function (cites) {
-  const nums = [];
-  for (const cite of cites || []) {
-    const key = cite.src + "\0" + (cite.loc || "");
-    if (!this.index.has(key)) {
-      this.index.set(key, this.items.length + 1);
-      this.items.push(cite);
-    }
-    nums.push(this.index.get(key));
-  }
-  return nums;
-};
-
-function appendCites(parent, nums) {
-  for (const n of nums) {
-    parent.appendChild(document.createTextNode(" "));
-    parent.appendChild(el("sup", "side-cite", "[" + n + "]"));
-  }
-}
-
-function appendRich(parent, text) {
-  let i = 0;
-  while (i < text.length) {
-    if (text.startsWith("**", i)) {
-      const end = text.indexOf("**", i + 2);
-      if (end < 0) break;
-      const strong = el("strong");
-      appendRich(strong, text.slice(i + 2, end));
-      parent.appendChild(strong);
-      i = end + 2;
-      continue;
-    }
-    if (text[i] === "*") {
-      const end = text.indexOf("*", i + 1);
-      if (end < 0) break;
-      parent.appendChild(el("em", null, text.slice(i + 1, end)));
-      i = end + 1;
-      continue;
-    }
-    const cite = /^\[(\d+)\]/.exec(text.slice(i));
-    if (cite) {
-      parent.appendChild(el("sup", "side-cite", "[" + cite[1] + "]"));
-      i += cite[0].length;
-      continue;
-    }
-    let j = i + 1;
-    while (j < text.length && text[j] !== "*" && text[j] !== "[") j += 1;
-    if (text[j] === "[" && !/^\[\d+\]/.test(text.slice(j))) j += 1;
-    parent.appendChild(document.createTextNode(text.slice(i, j)));
-    i = j;
-  }
-  if (i < text.length) parent.appendChild(document.createTextNode(text.slice(i)));
-}
-
 function showSidebar(node) {
   const body = document.getElementById("side-body");
   body.replaceChildren();
   const entry = lexiconEntry(node) || {};
-  const cites = new Citations();
+  const note = entry.note || {};
 
   body.appendChild(el("p", "side-en", englishWords(node)));
   body.appendChild(el("p", "side-he", hebrewWord(node)));
   body.appendChild(el("p", "side-tr", entry.transliteration || ""));
 
-  const discussion = section(body, "Discussion");
-  for (const item of entry.discussion || []) {
-    const head = el("h3");
-    appendRich(head, item.title || "");
-    discussion.appendChild(head);
-    const parts = (item.text || "").split(/\n\n+/).filter((part) => part);
-    const citeNums = cites.mark(item.cite);
-    const inlineCites = /\[\d+\]/.test(item.text || "");
-    (parts.length ? parts : [""]).forEach((part, i, all) => {
-      const quoted = part.startsWith("> ");
-      const text = el(quoted ? "blockquote" : "p");
-      const body = quoted ? part.replace(/^> /gm, "") : part;
-      body.split("\n").forEach((line, n) => {
-        if (n) text.appendChild(document.createElement("br"));
-        appendRich(text, line);
-      });
-      if (!inlineCites && i === all.length - 1) appendCites(text, citeNums);
-      discussion.appendChild(text);
-    });
-  }
-
-  const usages = section(body, "Usages");
-  if ((entry.usages || []).length) {
-    const ul = el("ul");
-    for (const item of entry.usages) {
-      const line = el("li");
-      const ref = item.ref || "";
-      line.appendChild(item.url ? link(item.url, ref) : el("span", "side-ref", ref));
-      if (item.note) line.appendChild(document.createTextNode(" " + item.note));
-      appendCites(line, cites.mark(item.cite));
-      ul.appendChild(line);
-    }
-    usages.appendChild(ul);
-  }
-
-  const listed = section(body, "Sources");
-  if (cites.items.length) {
-    const ol = el("ol");
-    for (const cite of cites.items) {
-      const src = sources[cite.src] || {};
-      const bits = [src.author, src.title, src.year, src.edition, cite.loc].filter(
-        (value) => value != null && value !== ""
-      );
-      const label = src.label || bits.join(", ");
-      const li = el("li");
-      const holder = src.url ? link(src.url) : el("span");
-      appendRich(holder, label);
-      li.appendChild(holder);
-      ol.appendChild(li);
-    }
-    listed.appendChild(ol);
-  }
+  section(body, "Discussion").insertAdjacentHTML("beforeend", note.discussion || "");
+  section(body, "Usages").insertAdjacentHTML("beforeend", note.usages || "");
+  section(body, "Sources").insertAdjacentHTML("beforeend", note.sources || "");
 
   document.getElementById("side").hidden = false;
   document.body.classList.add("side-open");
@@ -353,21 +244,62 @@ function setting(id, cls, fallback) {
   });
 }
 
+function failed() {
+  document.getElementById("text").textContent = "The text could not be loaded.";
+}
+
+function chapterEntry(chapters) {
+  const n = Number(new URLSearchParams(window.location.search).get("ch"));
+  return chapters.find((item) => item.n === n) || chapters[0];
+}
+
+function chapterNav(chapters, entry) {
+  if (chapters.length < 2) return;
+  const nav = el("nav", "chapters");
+  nav.setAttribute("aria-label", "Chapters");
+  for (const item of chapters) {
+    if (item === entry) {
+      const here = el("span", null, String(item.n));
+      here.setAttribute("aria-current", "page");
+      nav.appendChild(here);
+    } else {
+      const link = el("a", null, String(item.n));
+      link.href = "?ch=" + item.n;
+      nav.appendChild(link);
+    }
+  }
+  document.querySelector("header h1").after(nav);
+}
+
+function start() {
+  const data = window.SITE_DATA;
+  if (!data) {
+    failed();
+    return;
+  }
+  lexicon = data.lexicon;
+  render(data.chapter);
+  bind();
+}
+
 function main() {
   setting("opt-verses", "show-vn", true);
   setting("opt-hebrew", "show-he", true);
   setting("opt-supplied", "mark-supplied", false);
-  const data = window.SITE_DATA;
-  if (!data) {
-    document.getElementById("text").textContent =
-      "The text data (data/gen01.js) did not load. Run python3 scripts/build.py.";
+  const chapters = window.SITE_CHAPTERS;
+  if (!chapters || !chapters.length) {
+    failed();
     return;
   }
-  lexicon = data.lexicon;
-  sources = data.sources || {};
-  notes = data.notes || {};
-  render(data.chapter);
-  bind();
+  const entry = chapterEntry(chapters);
+  document.title = entry.title;
+  document.querySelector("header h1").textContent = entry.title;
+  chapterNav(chapters, entry);
+  const script = document.createElement("script");
+  script.src = entry.file;
+  script.addEventListener("load", start);
+  script.addEventListener("error", failed);
+  document.body.appendChild(script);
 }
 
 main();
